@@ -12,6 +12,7 @@ public class VideoManagerController : MonoBehaviour
     const string PREFIX = "file://";
     const string OP_PATH = @"H:\XPShare\ANIME\OP";
     const string SHARE_PATH = PREFIX + @"";
+    const float THUMB_SHOW_WAIT = 1.0f;
 
     #endregion "Const"
 
@@ -154,18 +155,28 @@ public class VideoManagerController : MonoBehaviour
             instance.GetComponentInChildren<VideoController>().Setting(path);
             prevPos = new Vector3(prevPos.x + margin, prevPos.y, prevPos.z);
             instance.transform.position = prevPos;
-            instance.SetActive(true);
+            instance.SetActive(false);
             _WallVideoList.Add(instance);
             Cnt++;
         });
 
         // サムネイル表示
+        Invoke("ShowThumbnail", THUMB_SHOW_WAIT);
+
+        // ランダム再生用キュー構築
+        ReloadVideoQueue();
+    }
+
+    /// <summary>
+    /// サムネイル表示
+    /// </summary>
+    private void ShowThumbnail()
+    {
         _WallVideoList.ForEach(obj =>
         {
             obj.GetComponentInChildren<VideoController>().ShowThumbnail();
+            obj.SetActive(true);
         });
-        // ランダム再生用キュー構築
-        ReloadVideoQueue();
     }
 
     /// <summary>
