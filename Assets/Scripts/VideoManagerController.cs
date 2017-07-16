@@ -1,0 +1,197 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using System.IO;
+using System.Linq;
+using System;
+using UnityEngine.Video;
+
+//VideoManagerゲームオブジェクト制御クラス
+public class VideoManagerController : MonoBehaviour
+{
+    #region "ファイルパス"
+
+    const string PREFIX = "file://";
+    const string OP_PATH = @"H:\XPShare\ANIME\OP";
+    const string SHARE_PATH = PREFIX + @"";
+
+    #endregion "ファイルパス"
+    [SerializeField]
+    public GameObject _org;
+
+    /// <summary>動画ファイルパス一覧</summary>
+    private List<string> _videoPath = new List<string>();
+    /// <summary>複製されたDisplayゲームオブジェクト一覧</summary>
+    private List<GameObject> _WallVideoList = new List<GameObject>();
+    /// <summary>キュー</summary>
+    private Queue<GameObject> _wallVideoQueue = new Queue<GameObject>();
+    private bool _isPlaying = false;
+    
+    /// <summary>
+    /// 再生判定
+    /// </summary>
+    public bool IsPlaying
+    {
+        get { return _isPlaying; }
+        set { _isPlaying = value; }
+    }
+
+    private bool _isEnabled = false;
+
+    /// <summary>
+    /// ENABLE制御判定
+    /// </summary>
+    public bool IsEnabled
+    {
+        get { return _isEnabled; }
+        set { _isEnabled = value; }
+    }
+    private float _volume = 1f;
+
+    public float Volume
+    {
+        get { return _volume; }
+        set
+        {
+            _volume = value;
+            if(PlayingVideo != null)
+                PlayingVideo.GetComponentInChildren<AudioSource>().volume = value;
+        }
+    }
+
+    /// <summary>
+    /// 再生中のゲームオブジェクト
+    /// </summary>
+    public GameObject PlayingVideo { get; set; }
+
+    // Use this for initialization
+    void Start()
+    {
+        CreateVideoPath();
+        CreateWallVideo();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+
+    }
+
+    private void CreateVideoPath()
+    {
+        var SrcDir = new string[] { OP_PATH };
+        List<string> getFiles = new List<string>();
+
+        Array.ForEach(SrcDir, Path =>
+        {
+            getFiles = Directory.GetFiles(Path, "*.*", SearchOption.TopDirectoryOnly).ToList();
+        });
+
+        getFiles.ForEach(path =>
+        {
+            string[] split = path.Split(System.IO.Path.DirectorySeparatorChar);
+            string dir = string.Format("{0}/{1}/{2}/{3}/{4}", split[0], split[1], split[2], split[3], split[4]);
+            _videoPath.Add(PREFIX + dir);
+        });
+    }
+
+    /// <summary>
+    /// Displayオブジェクト複製/配置
+    /// </summary>
+    private void CreateWallVideo()
+    {
+        uint Cnt = 1;
+        float margin = 1f;
+        Vector3 prevPos = _org.transform.localPosition;
+        _org.SetActive(false);
+        _videoPath.ForEach(path =>
+        {
+            if ((Cnt % 10) == 0)
+            {
+                prevPos = _org.transform.localPosition;
+                if (Cnt < 10)
+                {
+                    prevPos = new Vector3(prevPos.x, prevPos.y, prevPos.z);
+                }
+                else if (Cnt < 20)
+                {
+                    prevPos = new Vector3(prevPos.x, prevPos.y - 1, prevPos.z);
+                }
+                else if (Cnt < 30)
+                {
+                    prevPos = new Vector3(prevPos.x, prevPos.y - 2, prevPos.z);
+                }
+                else if (Cnt < 40)
+                {
+                    prevPos = new Vector3(prevPos.x, prevPos.y - 3, prevPos.z);
+                }
+                else if (Cnt < 50)
+                {
+                    prevPos = new Vector3(prevPos.x, prevPos.y - 4, prevPos.z);
+                }
+                else if (Cnt < 60)
+                {
+                    prevPos = new Vector3(prevPos.x, prevPos.y - 5, prevPos.z);
+                }
+                else if (Cnt < 70)
+                {
+                    prevPos = new Vector3(prevPos.x, prevPos.y - 6, prevPos.z);
+                }
+                else if (Cnt < 80)
+                {
+                    prevPos = new Vector3(prevPos.x, prevPos.y - 7, prevPos.z);
+                }
+            }
+
+            GameObject instance = Instantiate<GameObject>(_org);
+            instance.GetComponentInChildren<VideoController>().Setting(path);
+            prevPos = new Vector3(prevPos.x + margin, prevPos.y, prevPos.z);
+            instance.transform.position = prevPos;
+            instance.SetActive(true);
+            _WallVideoList.Add(instance);
+            Cnt++;
+        });
+
+        ReloadVideoQueue();
+    }
+
+    /// <summary>
+    /// ランダム再生用キューの構築
+    /// </summary>
+    public void ReloadVideoQueue()
+    {
+        var copyTmp = new List<GameObject>(_WallVideoList);
+
+        var s = copyTmp.OrderBy(obj => Guid.NewGuid()).ToList();
+        s.ForEach(obj =>
+        {
+            _wallVideoQueue.Enqueue(obj);
+        });
+    }
+
+    /// <summary>
+    /// ランダム再生
+    /// </summary>
+    public void NextPlay()
+    {
+        if (_wallVideoQueue.Count == 0)
+        {
+            ReloadVideoQueue();
+        }
+        _wallVideoQueue.Dequeue().GetComponent<DisplayController>().Play();
+    }
+
+    /// <summary>
+    /// スキップ
+    /// </summary>
+    public void Skip()
+    {
+        if (!IsPlaying)
+        {
+            return;
+        }
+
+        PlayingVideo.GetComponent<DisplayController>().Stop();
+        NextPlay();
+    }
+}
