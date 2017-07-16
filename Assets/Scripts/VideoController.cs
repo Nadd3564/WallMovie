@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.Video;
-using System.Collections;
 
 //VideoPlayerゲームオブジェクト制御クラス
 public class VideoController : MonoBehaviour
@@ -31,21 +30,15 @@ public class VideoController : MonoBehaviour
         videoClip = Resources.Load(path) as VideoClip;
         audioSource = gameObject.AddComponent<AudioSource>();
 
-        //下の2つは念のための程度の設定です
         //AudioのOutputModeを選択
         videoPlayer.audioOutputMode = VideoAudioOutputMode.AudioSource;
         //audioTrack[0]を有効に
         videoPlayer.EnableAudioTrack(0, true);
 
-        //audioSourceにaudioTrack[0]を設定？？
+        //audioSourceにaudioTrack[0]を設定
         videoPlayer.SetTargetAudioSource(0, audioSource);
-        //コレが最後に来るのが大事(直感)
-        //videoPlayer.clip = videoClip;
 
         audioSource.volume = 0;
-        ////再生
-        videoPlayer.Play();
-        Invoke("Stop", THUMB_WAIT);
     }
 
     public void Play()
@@ -72,4 +65,12 @@ public class VideoController : MonoBehaviour
         GameObject.Find("VideoManager").GetComponent<VideoManagerController>().NextPlay();
     }
 
+    /// <summary>
+    /// サムネイル表示
+    /// </summary>
+    public void ShowThumbnail()
+    {
+        videoPlayer.Play();
+        Invoke("Stop", THUMB_WAIT);
+    }
 }

@@ -1,21 +1,22 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 using System.IO;
 using System.Linq;
-using System;
-using UnityEngine.Video;
+using UnityEngine;
 
 //VideoManagerゲームオブジェクト制御クラス
 public class VideoManagerController : MonoBehaviour
 {
-    #region "ファイルパス"
+    #region "Const"
 
     const string PREFIX = "file://";
     const string OP_PATH = @"H:\XPShare\ANIME\OP";
     const string SHARE_PATH = PREFIX + @"";
 
-    #endregion "ファイルパス"
+    #endregion "Const"
+
+    #region "Variant"
+
     [SerializeField]
     public GameObject _org;
 
@@ -25,8 +26,15 @@ public class VideoManagerController : MonoBehaviour
     private List<GameObject> _WallVideoList = new List<GameObject>();
     /// <summary>キュー</summary>
     private Queue<GameObject> _wallVideoQueue = new Queue<GameObject>();
+
     private bool _isPlaying = false;
-    
+    private bool _isEnabled = false;
+    private float _volume = 1f;
+
+    #endregion "Variant"
+
+    #region "Property"
+
     /// <summary>
     /// 再生判定
     /// </summary>
@@ -36,8 +44,6 @@ public class VideoManagerController : MonoBehaviour
         set { _isPlaying = value; }
     }
 
-    private bool _isEnabled = false;
-
     /// <summary>
     /// ENABLE制御判定
     /// </summary>
@@ -46,7 +52,6 @@ public class VideoManagerController : MonoBehaviour
         get { return _isEnabled; }
         set { _isEnabled = value; }
     }
-    private float _volume = 1f;
 
     public float Volume
     {
@@ -54,7 +59,7 @@ public class VideoManagerController : MonoBehaviour
         set
         {
             _volume = value;
-            if(PlayingVideo != null)
+            if (PlayingVideo != null)
                 PlayingVideo.GetComponentInChildren<AudioSource>().volume = value;
         }
     }
@@ -63,6 +68,8 @@ public class VideoManagerController : MonoBehaviour
     /// 再生中のゲームオブジェクト
     /// </summary>
     public GameObject PlayingVideo { get; set; }
+
+    #endregion "Property"
 
     // Use this for initialization
     void Start()
@@ -152,6 +159,12 @@ public class VideoManagerController : MonoBehaviour
             Cnt++;
         });
 
+        // サムネイル表示
+        _WallVideoList.ForEach(obj =>
+        {
+            obj.GetComponentInChildren<VideoController>().ShowThumbnail();
+        });
+        // ランダム再生用キュー構築
         ReloadVideoQueue();
     }
 

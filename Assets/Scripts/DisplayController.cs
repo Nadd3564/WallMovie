@@ -1,14 +1,21 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class DisplayController : MonoBehaviour
 {
+    #region "Const"
+
+    static readonly Vector3 DISPLAY_SCALE = new Vector3(1.6f, 0.9f, 1f);
+    static readonly Vector3 DISPLAY_POS = new Vector3(0f, 1f, -9.1f);
+
+    #endregion "Const"
+
+    #region "Variant"
 
     Vector3 _prevPos;
     Vector3 _prevScale;
     VideoManagerController _videoManager;
 
+    #endregion "Variant"
 
     // Use this for initialization
     void Start()
@@ -25,7 +32,6 @@ public class DisplayController : MonoBehaviour
     }
 
 
-    // マウスカーソルが対象オブジェクトに進入した時にコールされる
     void OnMouseEnter()
     {
         print("MouseEnter!");
@@ -36,7 +42,6 @@ public class DisplayController : MonoBehaviour
         }
     }
 
-    // マウスカーソルが対象オブジェクトから退出した時にコールされる
     void OnMouseExit()
     {
         print("MouseExit!");
@@ -64,14 +69,14 @@ public class DisplayController : MonoBehaviour
 
     public void Play()
     {
-        Vector3 Distance = new Vector3(0 - _prevPos.x, 1 - _prevPos.y, -9.1f - _prevPos.z);
-        transform.localScale = new Vector3(1.6f, 0.9f, 1f);
+        Vector3 Distance = new Vector3(DISPLAY_POS.x - _prevPos.x, DISPLAY_POS.y - _prevPos.y, DISPLAY_POS.z - _prevPos.z);
+        transform.localScale = DISPLAY_SCALE;
         transform.Translate(Vector3.Lerp(transform.localPosition, Distance, 1f), Space.Self);
         _videoManager.PlayingVideo = this.gameObject;
         GetComponentInChildren<AudioSource>().volume = _videoManager.Volume;
         GetComponentInChildren<VideoController>().Play();
         _videoManager.IsPlaying = true;
-        
+
     }
 
     public void Stop()
